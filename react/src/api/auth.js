@@ -1,25 +1,16 @@
 import instance from './axios';
 
-export async function register(payload) {
-  // payload: { email, password, name?, age?, weight?, height? }
+export async function apiRegister(payload) {
   const res = await instance.post('/api/auth/register', payload);
-  const data = res.data;
-  if (data?.token) {
-    localStorage.setItem('token', data.token);
-  }
-  return data;
+  return res.data; // { user, token }
 }
 
-export async function login(payload) {
-  // payload: { email, password }
+export async function apiLogin(payload) {
   const res = await instance.post('/api/auth/login', payload);
-  const data = res.data;
-  if (data?.token) {
-    localStorage.setItem('token', data.token);
-  }
-  return data;
+  return res.data; // { user, token }
 }
 
-export function logout() {
-  localStorage.removeItem('token');
+export async function apiGetMe() {
+  const res = await instance.get('/api/users/me');
+  return res.data?.user;
 }

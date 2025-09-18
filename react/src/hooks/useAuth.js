@@ -1,20 +1,25 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { message } from 'antd';
-import * as authApi from '../api/auth';
-import * as usersApi from '../api/users';
-import { getApiErrorMessage } from '../utils/error';
+import { apiGetMe, apiLogin, apiRegister } from '../api/auth';
+
+export function useMe() {
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  return useQuery({
+    queryKey: ['me'],
+    queryFn: apiGetMe,
+    enabled: !!token,
+    retry: 0,
+  });
+}
 
 export function useLogin() {
   const qc = useQueryClient();
   return useMutation({
-    mutationKey: ['auth', 'login'],
-    mutationFn: (payload) => authApi.login(payload),
+    mutationFn: apiLogin,
     onSuccess: (data) => {
-      qc.setQueryData(['me'], data?.user || null);
-      message.success('Вход выполнен');
-    },
-    onError: (err) => {
-      message.error(getApiErrorMessage(err));
+      if (data?.token) {
+        localStorage.setItem('token', data.token);
+      }
+      qc.invalidateQueries({ queryKey: ['me'] });
     },
   });
 }
@@ -22,28 +27,12 @@ export function useLogin() {
 export function useRegister() {
   const qc = useQueryClient();
   return useMutation({
-    mutationKey: ['auth', 'register'],
-    mutationFn: (payload) => authApi.register(payload),
+    mutationFn: apiRegister,
     onSuccess: (data) => {
-      qc.setQueryData(['me'], data?.user || null);
-      message.success('Регистрация успешна');
+      if (data?.token) {
+        localStorage.setItem('token', data.token);
+      }
+      qc.invalidateQueries({ queryKey: ['me'] });
     },
-    onError: (err) => {
-      message.error(getApiErrorMessage(err));
-    },
-  });
-}
-
-export function useMe() {
-  const hasToken = !!localStorage.getItem('token');
-  return useQuery({
-    queryKey: ['me'],
-    queryFn: async () => {
-      const res = await usersApi.getMe();
-      return res?.user || null;
-    },
-    enabled: hasToken,
-    staleTime: 1000 * 60,
-    refetchOnWindowFocus: false,
   });
 }

@@ -1,16 +1,16 @@
 import instance from './axios';
 
-export async function getSummary(params = {}) {
+export async function apiStatsSummary(params) {
   const res = await instance.get('/api/stats/summary', { params });
-  return res.data; // { summary: {...} }
+  return res.data?.summary || res.data;
 }
 
-export async function getWeekly(params = {}) {
+export async function apiStatsWeekly(params) {
   const res = await instance.get('/api/stats/weekly', { params });
-  return res.data; // { items: [...] }
+  return res.data?.items || [];
 }
 
-export async function getMonthly(params = {}) {
+export async function apiStatsMonthly(params) {
   const res = await instance.get('/api/stats/monthly', { params });
-  return res.data; // { items: [...] }
+  return res.data?.items || [];
 }
