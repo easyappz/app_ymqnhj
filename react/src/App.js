@@ -8,6 +8,7 @@ import Stats from './pages/Stats';
 import RoutesMap from './pages/RoutesMap';
 import History from './pages/History';
 import Goals from './pages/Goals';
+import RequireAuth from './components/RequireAuth';
 
 function App() {
   return (
@@ -15,11 +16,11 @@ function App() {
       <Routes>
         <Route element={<MainLayout />}> 
           <Route path="/" element={<Home />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/stats" element={<Stats />} />
-          <Route path="/routes" element={<RoutesMap />} />
-          <Route path="/history" element={<History />} />
-          <Route path="/goals" element={<Goals />} />
+          <Route path="/profile" element={<RequireAuth><Profile /></RequireAuth>} />
+          <Route path="/stats" element={<RequireAuth><Stats /></RequireAuth>} />
+          <Route path="/routes" element={<RequireAuth><RoutesMap /></RequireAuth>} />
+          <Route path="/history" element={<RequireAuth><History /></RequireAuth>} />
+          <Route path="/goals" element={<RequireAuth><Goals /></RequireAuth>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>
