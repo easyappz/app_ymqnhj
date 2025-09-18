@@ -1,34 +1,21 @@
 const express = require('express');
-const mongoose = require('mongoose');
-
-/**
- * Пример создания модели в базу данных
- */
-// const MongoTestSchema = new mongoose.Schema({
-//   value: { type: String, required: true },
-// });
-
-// const MongoModelTest = mongoose.model('Test', MongoTestSchema);
-
-// const newTest = new MongoModelTest({
-//   value: 'test-value',
-// });
-
-// newTest.save();
+const authController = require('@src/controllers/authController');
+const userController = require('@src/controllers/userController');
+const auth = require('@src/middlewares/auth');
 
 const router = express.Router();
 
-// GET /api/hello
-router.get('/hello', (req, res) => {
-  res.json({ message: 'Hello from API!' });
+// Healthcheck
+router.get('/status', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// GET /api/status
-router.get('/status', (req, res) => {
-  res.json({ 
-    status: 'ok',
-    timestamp: new Date().toISOString()
-  });
-});
+// Auth
+router.post('/auth/register', authController.register);
+router.post('/auth/login', authController.login);
+
+// Users
+router.get('/users/me', auth, userController.getMe);
+router.patch('/users/me', auth, userController.updateMe);
 
 module.exports = router;

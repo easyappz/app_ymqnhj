@@ -1,0 +1,323 @@
+openapi: 3.0.0
+info:
+  title: Running App API
+  version: 1.0.0
+  description: |
+    HTTP-only API for the Running App. JWT is passed strictly via Authorization header (Bearer <token>).
+    MongoDB is used with Mongoose. All endpoints are under the /api prefix.
+servers:
+  - url: /
+    description: Root server, all paths are absolute and include /api prefix
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "66f1d6f8b3137c45a9d25e1c"
+        email:
+          type: string
+          example: user@example.com
+        name:
+          type: string
+          example: John Doe
+        age:
+          type: integer
+          nullable: true
+          example: 28
+        weight:
+          type: number
+          nullable: true
+          example: 75
+        height:
+          type: number
+          nullable: true
+          example: 180
+        avatarUrl:
+          type: string
+          example: "https://example.com/avatar.png"
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+paths:
+  /api/status:
+    get:
+      summary: Healthcheck
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              example:
+                status: ok
+                timestamp: "2025-01-01T10:00:00.000Z"
+  /api/auth/register:
+    post:
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                  example: user@example.com
+                password:
+                  type: string
+                  example: secret123
+                name:
+                  type: string
+                  example: John Doe
+                age:
+                  type: integer
+                  nullable: true
+                  example: 28
+                weight:
+                  type: number
+                  nullable: true
+                  example: 75
+                height:
+                  type: number
+                  nullable: true
+                  example: 180
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/User'
+                  token:
+                    type: string
+              example:
+                user:
+                  id: "66f1d6f8b3137c45a9d25e1c"
+                  email: user@example.com
+                  name: John Doe
+                  age: 28
+                  weight: 75
+                  height: 180
+                  avatarUrl: ""
+                  createdAt: "2025-01-01T10:00:00.000Z"
+                  updatedAt: "2025-01-01T10:00:00.000Z"
+                token: "<jwt-token>"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              example:
+                error: Email and password are required
+        '409':
+          description: Conflict - User already exists
+          content:
+            application/json:
+              example:
+                error: User already exists
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              example:
+                error: Registration failed
+                details: Error details here
+  /api/auth/login:
+    post:
+      summary: Login user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                  example: user@example.com
+                password:
+                  type: string
+                  example: secret123
+      responses:
+        '200':
+          description: Authenticated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/User'
+                  token:
+                    type: string
+              example:
+                user:
+                  id: "66f1d6f8b3137c45a9d25e1c"
+                  email: user@example.com
+                  name: John Doe
+                  age: 28
+                  weight: 75
+                  height: 180
+                  avatarUrl: ""
+                  createdAt: "2025-01-01T10:00:00.000Z"
+                  updatedAt: "2025-01-01T10:00:00.000Z"
+                token: "<jwt-token>"
+        '400':
+          description: Missing fields
+          content:
+            application/json:
+              example:
+                error: Email and password are required
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              example:
+                error: Invalid credentials
+        '404':
+          description: User not found
+          content:
+            application/json:
+              example:
+                error: User not found
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              example:
+                error: Login failed
+                details: Error details here
+  /api/users/me:
+    get:
+      summary: Get current user profile
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Current user profile
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/User'
+              example:
+                user:
+                  id: "66f1d6f8b3137c45a9d25e1c"
+                  email: user@example.com
+                  name: John Doe
+                  age: 28
+                  weight: 75
+                  height: 180
+                  avatarUrl: ""
+                  createdAt: "2025-01-01T10:00:00.000Z"
+                  updatedAt: "2025-01-01T10:00:00.000Z"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                missing:
+                  value:
+                    error: Authorization header is missing
+                invalid:
+                  value:
+                    error: Invalid token
+                    details: jwt malformed
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              example:
+                error: User not found
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              example:
+                error: Failed to fetch profile
+                details: Error details here
+    patch:
+      summary: Update current user basic profile
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: New Name
+                age:
+                  type: integer
+                  example: 29
+                weight:
+                  type: number
+                  example: 76
+                height:
+                  type: number
+                  example: 181
+      responses:
+        '200':
+          description: Updated profile
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/User'
+              example:
+                user:
+                  id: "66f1d6f8b3137c45a9d25e1c"
+                  email: user@example.com
+                  name: New Name
+                  age: 29
+                  weight: 76
+                  height: 181
+                  avatarUrl: ""
+                  createdAt: "2025-01-01T10:00:00.000Z"
+                  updatedAt: "2025-01-01T10:05:00.000Z"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                missing:
+                  value:
+                    error: Authorization header is missing
+                invalid:
+                  value:
+                    error: Invalid token
+                    details: jwt malformed
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              example:
+                error: User not found
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              example:
+                error: Failed to update profile
+                details: Error details here

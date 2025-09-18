@@ -1,0 +1,4 @@
+module.exports = {
+  JWT_SECRET: 'RUNNING_APP_JWT_SECRET_CHANGE_ME',
+  TOKEN_EXPIRES_IN: '7d',
+};
