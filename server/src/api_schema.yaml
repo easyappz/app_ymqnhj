@@ -3,53 +3,11 @@ info:
   title: Running App API
   version: 1.0.0
   description: |
-    HTTP-only API for the Running App. JWT is passed strictly via Authorization header (Bearer <token>).
-    MongoDB is used with Mongoose. All endpoints are under the /api prefix.
+    Easyappz Running App API. All protected endpoints require Authorization header with Bearer JWT token.
 servers:
-  - url: /
-    description: Root server, all paths are absolute and include /api prefix
-components:
-  securitySchemes:
-    bearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
-  schemas:
-    User:
-      type: object
-      properties:
-        id:
-          type: string
-          example: "66f1d6f8b3137c45a9d25e1c"
-        email:
-          type: string
-          example: user@example.com
-        name:
-          type: string
-          example: John Doe
-        age:
-          type: integer
-          nullable: true
-          example: 28
-        weight:
-          type: number
-          nullable: true
-          example: 75
-        height:
-          type: number
-          nullable: true
-          example: 180
-        avatarUrl:
-          type: string
-          example: "https://example.com/avatar.png"
-        createdAt:
-          type: string
-          format: date-time
-        updatedAt:
-          type: string
-          format: date-time
+  - url: /api
 paths:
-  /api/status:
+  /status:
     get:
       summary: Healthcheck
       responses:
@@ -59,10 +17,10 @@ paths:
             application/json:
               example:
                 status: ok
-                timestamp: "2025-01-01T10:00:00.000Z"
-  /api/auth/register:
+                timestamp: '2025-01-01T00:00:00.000Z'
+  /auth/register:
     post:
-      summary: Register a new user
+      summary: Register new user
       requestBody:
         required: true
         content:
@@ -71,73 +29,40 @@ paths:
               type: object
               required: [email, password]
               properties:
-                email:
-                  type: string
-                  example: user@example.com
-                password:
-                  type: string
-                  example: secret123
-                name:
-                  type: string
-                  example: John Doe
-                age:
-                  type: integer
-                  nullable: true
-                  example: 28
-                weight:
-                  type: number
-                  nullable: true
-                  example: 75
-                height:
-                  type: number
-                  nullable: true
-                  example: 180
+                email: { type: string }
+                password: { type: string, minLength: 6 }
+                name: { type: string }
+                age: { type: number }
+                weight: { type: number }
+                height: { type: number }
       responses:
         '201':
           description: Created
           content:
             application/json:
-              schema:
-                type: object
-                properties:
-                  user:
-                    $ref: '#/components/schemas/User'
-                  token:
-                    type: string
               example:
                 user:
-                  id: "66f1d6f8b3137c45a9d25e1c"
+                  id: '656f1a...'
                   email: user@example.com
-                  name: John Doe
-                  age: 28
-                  weight: 75
-                  height: 180
-                  avatarUrl: ""
-                  createdAt: "2025-01-01T10:00:00.000Z"
-                  updatedAt: "2025-01-01T10:00:00.000Z"
-                token: "<jwt-token>"
-        '400':
-          description: Bad Request
+                  name: ''
+                  age: null
+                  weight: null
+                  height: null
+                  avatarUrl: ''
+                  createdAt: '2025-01-01T00:00:00.000Z'
+                  updatedAt: '2025-01-01T00:00:00.000Z'
+                token: 'jwt.token.here'
+        '4XX':
+          description: Client error
           content:
             application/json:
               example:
-                error: Email and password are required
-        '409':
-          description: Conflict - User already exists
-          content:
-            application/json:
-              example:
-                error: User already exists
-        '500':
-          description: Server Error
-          content:
-            application/json:
-              example:
-                error: Registration failed
-                details: Error details here
-  /api/auth/login:
+                error:
+                  message: 'User already exists'
+                  details: 'User with email user@example.com already exists'
+  /auth/login:
     post:
-      summary: Login user
+      summary: Login
       requestBody:
         required: true
         content:
@@ -146,114 +71,104 @@ paths:
               type: object
               required: [email, password]
               properties:
-                email:
-                  type: string
-                  example: user@example.com
-                password:
-                  type: string
-                  example: secret123
+                email: { type: string }
+                password: { type: string }
       responses:
         '200':
-          description: Authenticated
+          description: OK
           content:
             application/json:
-              schema:
-                type: object
-                properties:
-                  user:
-                    $ref: '#/components/schemas/User'
-                  token:
-                    type: string
               example:
                 user:
-                  id: "66f1d6f8b3137c45a9d25e1c"
+                  id: '656f1a...'
                   email: user@example.com
-                  name: John Doe
-                  age: 28
-                  weight: 75
-                  height: 180
-                  avatarUrl: ""
-                  createdAt: "2025-01-01T10:00:00.000Z"
-                  updatedAt: "2025-01-01T10:00:00.000Z"
-                token: "<jwt-token>"
-        '400':
-          description: Missing fields
-          content:
-            application/json:
-              example:
-                error: Email and password are required
+                  name: User
+                  age: 30
+                  weight: 70
+                  height: 175
+                  avatarUrl: ''
+                  createdAt: '2025-01-01T00:00:00.000Z'
+                  updatedAt: '2025-01-01T00:00:00.000Z'
+                token: 'jwt.token.here'
         '401':
-          description: Invalid credentials
+          description: Unauthorized
           content:
             application/json:
               example:
-                error: Invalid credentials
-        '404':
-          description: User not found
-          content:
-            application/json:
-              example:
-                error: User not found
-        '500':
-          description: Server Error
-          content:
-            application/json:
-              example:
-                error: Login failed
-                details: Error details here
-  /api/users/me:
+                error:
+                  message: 'Invalid credentials'
+                  details: 'Incorrect email or password'
+  /users/me:
     get:
       summary: Get current user profile
       security:
         - bearerAuth: []
       responses:
         '200':
-          description: Current user profile
+          description: OK
           content:
             application/json:
-              schema:
-                type: object
-                properties:
-                  user:
-                    $ref: '#/components/schemas/User'
               example:
                 user:
-                  id: "66f1d6f8b3137c45a9d25e1c"
+                  id: '656f1a...'
                   email: user@example.com
-                  name: John Doe
-                  age: 28
-                  weight: 75
-                  height: 180
-                  avatarUrl: ""
-                  createdAt: "2025-01-01T10:00:00.000Z"
-                  updatedAt: "2025-01-01T10:00:00.000Z"
+                  name: ''
+                  age: null
+                  weight: null
+                  height: null
+                  avatarUrl: ''
+                  createdAt: '2025-01-01T00:00:00.000Z'
+                  updatedAt: '2025-01-01T00:00:00.000Z'
         '401':
           description: Unauthorized
-          content:
-            application/json:
-              examples:
-                missing:
-                  value:
-                    error: Authorization header is missing
-                invalid:
-                  value:
-                    error: Invalid token
-                    details: jwt malformed
-        '404':
-          description: Not Found
-          content:
-            application/json:
-              example:
-                error: User not found
-        '500':
-          description: Server Error
-          content:
-            application/json:
-              example:
-                error: Failed to fetch profile
-                details: Error details here
     patch:
-      summary: Update current user basic profile
+      summary: Update current user profile
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+                age: { type: number }
+                weight: { type: number }
+                height: { type: number }
+      responses:
+        '200':
+          description: OK
+  /runs:
+    get:
+      summary: List runs with pagination and optional date filters
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: page
+          schema: { type: integer, minimum: 1, default: 1 }
+        - in: query
+          name: limit
+          schema: { type: integer, minimum: 1, maximum: 100, default: 10 }
+        - in: query
+          name: from
+          schema: { type: string, format: date-time }
+        - in: query
+          name: to
+          schema: { type: string, format: date-time }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              example:
+                items: []
+                page: 1
+                limit: 10
+                total: 0
+                hasMore: false
+    post:
+      summary: Create a run
       security:
         - bearerAuth: []
       requestBody:
@@ -262,62 +177,336 @@ paths:
           application/json:
             schema:
               type: object
+              required: [date, distanceKm, durationMin]
               properties:
-                name:
-                  type: string
-                  example: New Name
-                age:
-                  type: integer
-                  example: 29
-                weight:
-                  type: number
-                  example: 76
-                height:
-                  type: number
-                  example: 181
+                date: { type: string, format: date-time }
+                distanceKm: { type: number, minimum: 0 }
+                durationMin: { type: number, minimum: 0 }
+                calories: { type: number, minimum: 0 }
+                notes: { type: string }
+                route: { type: string, description: 'Route ObjectId' }
+      responses:
+        '201':
+          description: Created
+  /runs/{id}:
+    get:
+      summary: Get run by id
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: OK }
+        '404': { description: Not found }
+    patch:
+      summary: Update run
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                date: { type: string, format: date-time }
+                distanceKm: { type: number, minimum: 0 }
+                durationMin: { type: number, minimum: 0 }
+                calories: { type: number, minimum: 0 }
+                notes: { type: string }
+                route: { type: string }
+      responses:
+        '200': { description: OK }
+        '404': { description: Not found }
+    delete:
+      summary: Delete run
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: OK }
+        '404': { description: Not found }
+  /routes:
+    get:
+      summary: List routes with pagination
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: page
+          schema: { type: integer, minimum: 1, default: 1 }
+        - in: query
+          name: limit
+          schema: { type: integer, minimum: 1, maximum: 100, default: 10 }
+      responses:
+        '200': { description: OK }
+    post:
+      summary: Create route
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name: { type: string }
+                description: { type: string }
+                points:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      lat: { type: number }
+                      lng: { type: number }
+                totalDistanceKm: { type: number, minimum: 0 }
+      responses:
+        '201': { description: Created }
+  /routes/{id}:
+    get:
+      summary: Get route by id
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: OK }
+        '404': { description: Not found }
+    patch:
+      summary: Update route
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+                description: { type: string }
+                points:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      lat: { type: number }
+                      lng: { type: number }
+                totalDistanceKm: { type: number, minimum: 0 }
+      responses:
+        '200': { description: OK }
+        '404': { description: Not found }
+    delete:
+      summary: Delete route
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: OK }
+        '404': { description: Not found }
+  /goals:
+    get:
+      summary: List goals with pagination and optional status filter
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: page
+          schema: { type: integer, minimum: 1, default: 1 }
+        - in: query
+          name: limit
+          schema: { type: integer, minimum: 1, maximum: 100, default: 10 }
+        - in: query
+          name: status
+          schema: { type: string, enum: [active, completed, failed] }
+      responses:
+        '200': { description: OK }
+    post:
+      summary: Create goal
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title, targetType, targetValue, period, startDate, endDate]
+              properties:
+                title: { type: string }
+                targetType: { type: string, enum: [distance, duration, pace, frequency] }
+                targetValue: { type: number, minimum: 0 }
+                period: { type: string, enum: [week, month, custom] }
+                startDate: { type: string, format: date-time }
+                endDate: { type: string, format: date-time }
+                progressValue: { type: number, minimum: 0 }
+      responses:
+        '201': { description: Created }
+  /goals/{id}:
+    get:
+      summary: Get goal by id
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: OK }
+        '404': { description: Not found }
+    patch:
+      summary: Update goal
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title: { type: string }
+                targetType: { type: string, enum: [distance, duration, pace, frequency] }
+                targetValue: { type: number, minimum: 0 }
+                period: { type: string, enum: [week, month, custom] }
+                startDate: { type: string, format: date-time }
+                endDate: { type: string, format: date-time }
+                progressValue: { type: number, minimum: 0 }
+      responses:
+        '200': { description: OK }
+        '404': { description: Not found }
+    delete:
+      summary: Delete goal
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: OK }
+        '404': { description: Not found }
+  /stats/summary:
+    get:
+      summary: Summary stats for runs
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: from
+          schema: { type: string, format: date-time }
+        - in: query
+          name: to
+          schema: { type: string, format: date-time }
       responses:
         '200':
-          description: Updated profile
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  user:
-                    $ref: '#/components/schemas/User'
-              example:
-                user:
-                  id: "66f1d6f8b3137c45a9d25e1c"
-                  email: user@example.com
-                  name: New Name
-                  age: 29
-                  weight: 76
-                  height: 181
-                  avatarUrl: ""
-                  createdAt: "2025-01-01T10:00:00.000Z"
-                  updatedAt: "2025-01-01T10:05:00.000Z"
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              examples:
-                missing:
-                  value:
-                    error: Authorization header is missing
-                invalid:
-                  value:
-                    error: Invalid token
-                    details: jwt malformed
-        '404':
-          description: Not Found
+          description: OK
           content:
             application/json:
               example:
-                error: User not found
-        '500':
-          description: Server Error
+                summary:
+                  totalDistanceKm: 42.2
+                  totalDurationMin: 240
+                  totalRuns: 5
+                  avgPace: 5.68
+  /stats/weekly:
+    get:
+      summary: Weekly aggregates (last N weeks)
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: n
+          schema: { type: integer, minimum: 1, maximum: 52, default: 12 }
+        - in: query
+          name: from
+          schema: { type: string, format: date-time }
+        - in: query
+          name: to
+          schema: { type: string, format: date-time }
+      responses:
+        '200':
+          description: OK
           content:
             application/json:
               example:
-                error: Failed to update profile
-                details: Error details here
+                items:
+                  - year: 2025
+                    week: 1
+                    totalDistanceKm: 30
+                    totalDurationMin: 160
+                    totalRuns: 3
+                    avgPace: 5.33
+  /stats/monthly:
+    get:
+      summary: Monthly aggregates (last N months)
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: n
+          schema: { type: integer, minimum: 1, maximum: 36, default: 12 }
+        - in: query
+          name: from
+          schema: { type: string, format: date-time }
+        - in: query
+          name: to
+          schema: { type: string, format: date-time }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              example:
+                items:
+                  - year: 2025
+                    month: 1
+                    totalDistanceKm: 120
+                    totalDurationMin: 640
+                    totalRuns: 12
+                    avgPace: 5.33
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            message: { type: string }
+            details: { type: string }

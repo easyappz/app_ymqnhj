@@ -20,13 +20,13 @@ exports.register = async (req, res) => {
     const { email, password, name, age, weight, height } = req.body || {};
 
     if (!email || !password) {
-      return res.status(400).json({ error: 'Email and password are required' });
+      return res.status(400).json({ error: { message: 'Email and password are required', details: 'Provide email and password' } });
     }
 
     const normalizedEmail = String(email).toLowerCase().trim();
     const exists = await User.findOne({ email: normalizedEmail });
     if (exists) {
-      return res.status(409).json({ error: 'User already exists' });
+      return res.status(409).json({ error: { message: 'User already exists', details: `User with email ${normalizedEmail} already exists` } });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -44,7 +44,7 @@ exports.register = async (req, res) => {
 
     return res.status(201).json({ user: buildUserResponse(user), token });
   } catch (err) {
-    return res.status(500).json({ error: 'Registration failed', details: err.message });
+    return res.status(500).json({ error: { message: 'Registration failed', details: err.message } });
   }
 };
 
@@ -53,19 +53,19 @@ exports.login = async (req, res) => {
     const { email, password } = req.body || {};
 
     if (!email || !password) {
-      return res.status(400).json({ error: 'Email and password are required' });
+      return res.status(400).json({ error: { message: 'Email and password are required', details: 'Provide email and password' } });
     }
 
     const normalizedEmail = String(email).toLowerCase().trim();
     const user = await User.findOne({ email: normalizedEmail }).select('+password');
 
     if (!user) {
-      return res.status(404).json({ error: 'User not found' });
+      return res.status(404).json({ error: { message: 'User not found', details: `No user with email ${normalizedEmail}` } });
     }
 
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
-      return res.status(401).json({ error: 'Invalid credentials' });
+      return res.status(401).json({ error: { message: 'Invalid credentials', details: 'Incorrect email or password' } });
     }
 
     const token = jwt.sign({ id: user._id.toString(), email: user.email }, JWT_SECRET, { expiresIn: TOKEN_EXPIRES_IN });
@@ -73,6 +73,6 @@ exports.login = async (req, res) => {
     const safeUser = await User.findById(user._id);
     return res.status(200).json({ user: buildUserResponse(safeUser), token });
   } catch (err) {
-    return res.status(500).json({ error: 'Login failed', details: err.message });
+    return res.status(500).json({ error: { message: 'Login failed', details: err.message } });
   }
 };

@@ -19,7 +19,7 @@ app.use('/api', apiRoutes);
 app.use((err, req, res, next) => {
   console.error('Unhandled error:', err);
   const status = err.status || 500;
-  res.status(status).json({ error: 'Internal Server Error', details: err.message || String(err) });
+  res.status(status).json({ error: { message: 'Internal Server Error', details: err.message || String(err) } });
 });
 
 // DB connection and server start

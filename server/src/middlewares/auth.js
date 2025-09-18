@@ -5,12 +5,12 @@ module.exports = function auth(req, res, next) {
   try {
     const authHeader = req.headers['authorization'] || '';
     if (!authHeader) {
-      return res.status(401).json({ error: 'Authorization header is missing' });
+      return res.status(401).json({ error: { message: 'Authorization header is missing', details: 'Expected Authorization: Bearer <token>' } });
     }
 
     const [scheme, token] = authHeader.split(' ');
     if (scheme !== 'Bearer' || !token) {
-      return res.status(401).json({ error: 'Authorization header is malformed. Expected: Bearer <token>' });
+      return res.status(401).json({ error: { message: 'Authorization header is malformed', details: 'Expected format: Bearer <token>' } });
     }
 
     try {
@@ -18,9 +18,9 @@ module.exports = function auth(req, res, next) {
       req.user = { id: payload.id, email: payload.email };
       return next();
     } catch (err) {
-      return res.status(401).json({ error: 'Invalid token', details: err.message });
+      return res.status(401).json({ error: { message: 'Invalid token', details: err.message } });
     }
   } catch (err) {
-    return res.status(500).json({ error: 'Auth middleware error', details: err.message });
+    return res.status(500).json({ error: { message: 'Auth middleware error', details: err.message } });
   }
 };
